@@ -1,5 +1,5 @@
 {
-  "name": "pimcore/output-data-config-toolkit-bundle",
+  "name": "nowmedia-team/output-data-config-toolkit",
   "license": "GPL-3.0+",
   "type": "pimcore-bundle",
   "require": {
