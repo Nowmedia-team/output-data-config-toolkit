@@ -42,6 +42,7 @@ class OutputDataConfigToolkitExtension extends Extension
         $displayMode = $config['classification_store']['display_mode'];
         $defaultGrid = $config['tab_options']['default_classes'];
         $orderByName = $config['tab_options']['order_by_name'];
+        $definition = $config['definition'];
 
         $container
             ->getDefinition(ClassController::class)
@@ -50,6 +51,7 @@ class OutputDataConfigToolkitExtension extends Extension
         $container
             ->getDefinition(AdminController::class)
             ->addMethodCall('setDefaultGridClasses', [$defaultGrid])
+            ->addMethodCall('setDefinitionQueryParams', [$definition['query_params']])
             ->addMethodCall('setOrderByName', [$orderByName]);
     }
 }

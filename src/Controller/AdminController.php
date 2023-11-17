@@ -15,10 +15,12 @@
 
 namespace OutputDataConfigToolkitBundle\Controller;
 
+use OutputDataConfigToolkitBundle\Constant\ColumnDefinitionConfigDisplayMode;
 use OutputDataConfigToolkitBundle\Event\InitializeEvent;
 use OutputDataConfigToolkitBundle\Event\OutputDataConfigToolkitEvents;
 use OutputDataConfigToolkitBundle\Event\SaveConfigEvent;
 use OutputDataConfigToolkitBundle\OutputDefinition;
+use OutputDataConfigToolkitBundle\OutputDefinition\Query\IQueryOutputDefinition;
 use OutputDataConfigToolkitBundle\Service;
 use Pimcore\Controller\Traits\JsonHelperTrait;
 use Pimcore\Controller\UserAwareController;
@@ -48,6 +50,8 @@ class AdminController extends UserAwareController
 
     /* @var string[] $defaultGridClasses */
     private $defaultGridClasses = [];
+
+    private $definitionQueryParams = [];
 
     /* @var bool $orderByName */
     private $orderByName = false;
@@ -191,11 +195,36 @@ class AdminController extends UserAwareController
 
             $objectClass = ClassDefinition::getById($config->getClassId());
             $configuration = json_decode($config->getConfiguration());
-            $configuration = $this->doGetAttributeLabels($configuration, $objectClass);
+
+            $object = AbstractObject::getById($config->getObjectId());
+
+            $displayConfig = $this->definitionQueryParams[$object->getClassName()] ?? [];
+            $displayMode = $displayConfig['display_mode'] ?? ColumnDefinitionConfigDisplayMode::DEFAULT;
+
+            if ($displayMode === ColumnDefinitionConfigDisplayMode::QUERY) {
+                $queryClass = $displayConfig['query_class_full_path'] ?: '';
+                if (
+                    !empty($queryClass)
+                    && class_exists($queryClass)
+                ) {
+                    /** @var IQueryOutputDefinition $queryClassObject */
+                    $queryClassObject = new $queryClass();
+                    if (!$queryClassObject instanceof IQueryOutputDefinition) {
+                        throw new \Exception('Class ' . $queryClass . ' must implement ' . IQueryOutputDefinition::class);
+                    }
+                    $configuration = $queryClassObject->loadConfiguration($objectClass, $object, $configuration);
+                }
+            } else {
+                $configuration = $this->doGetAttributeLabels($configuration, $objectClass);
+            }
 
             $config->setConfiguration($configuration);
 
-            return $this->jsonResponse(['success' => true, 'outputConfig' => $config]);
+            return $this->jsonResponse([
+                'success' => true,
+                'outputConfig' => $config,
+                'displayMode' => $displayMode
+            ]);
         } catch (\Exception $e) {
             Logger::err($e);
 
@@ -507,6 +536,18 @@ class AdminController extends UserAwareController
     public function getDefaultGridClasses(): array
     {
         return $this->defaultGridClasses;
+    }
+
+    public function setDefinitionQueryParams(array $definitionQueryParams): static
+    {
+        $this->definitionQueryParams = $definitionQueryParams;
+
+        return $this;
+    }
+
+    public function getDefinitionQueryParams(): array
+    {
+        return $this->definitionQueryParams;
     }
 
     /**

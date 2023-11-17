@@ -19,7 +19,9 @@ pimcore.bundle.outputDataConfigToolkit.OutputDataConfigDialog = Class.create(pim
     brickKeys: [],
     availableOperators: null,
 
-    initialize: function (outputConfig, callback, availableOperators, targetObjectId) {
+    initialize: function (outputConfig, callback, availableOperators, targetObjectId, displayMode = 'default') {
+
+        this.displayMode = displayMode
 
         if(pimcore.settings === undefined) {
             pimcore.settings = { debug_admin_translations: false };
@@ -96,7 +98,7 @@ pimcore.bundle.outputDataConfigToolkit.OutputDataConfigDialog = Class.create(pim
         }
     },
 
-    getSelectionPanel: function () {
+    getDefaultSelectionPanel: function () {
         if(!this.selectionPanel) {
             var childs = this.doBuildChannelConfigTree(this.outputConfig.configuration);
 
@@ -119,7 +121,6 @@ pimcore.bundle.outputDataConfigToolkit.OutputDataConfigDialog = Class.create(pim
                     filterButton
                 ]
             };
-
 
             this.selectionPanel = new Ext.tree.TreePanel({
                 root: {
@@ -277,6 +278,145 @@ pimcore.bundle.outputDataConfigToolkit.OutputDataConfigDialog = Class.create(pim
         return this.selectionPanel;
     },
 
+    getQuerySelectionPanel: function () {
+        if(!this.selectionPanel) {
+            var childs = this.doBuildChannelConfigTree(this.outputConfig.configuration);
+            var filterField = new Ext.form.field.Text(
+                {
+                    width: 300,
+                    hideLabel: true,
+                    enableKeyEvents: true
+                }
+            );
+
+            var filterButton = new Ext.button.Button({
+                iconCls: "pimcore_icon_search"
+            });
+
+            var headerConfig = {
+                title: t('class_attributes'),
+                items: [
+                    filterField,
+                    filterButton
+                ]
+            };
+
+            this.selectionPanel = new Ext.tree.TreePanel({
+                root: {
+                    id: "0",
+                    root: true,
+                    text: t("output_channel_definition"),
+                    leaf: false,
+                    isTarget: true,
+                    expanded: true,
+                    children: childs
+                },
+                region:'east',
+                tbar: headerConfig,
+
+                title: t('output_channel_definition'),
+                layout:'fit',
+                width: 428,
+                split:true,
+                autoScroll:true,
+                rootVisible: false,
+                viewConfig: {
+                    plugins: {
+                        ptype: 'treeviewdragdrop',
+                        ddGroup: "columnconfigelement",
+                        enableDrag: false,
+                        allowContainerDrops: false
+                    },
+                    listeners: {
+                        options: {
+                            target: this.selectionPanel
+                        },
+                        beforedrop: function (node, data, overModel, dropPosition, dropHandlers, eOpts) {
+                            var target = overModel.getOwnerTree().getView();
+                            var source = data.view;
+
+                            if (source != target) {
+                                var record = data.records[0];
+
+                                var attr = record.data;
+                                if (record.data.configAttributes) {
+                                    attr = record.data.configAttributes;
+                                }
+                                var element = this.getConfigElement(attr);
+                                var copy = element.getCopyNode(record);
+                                copy.data.configAttributes.label = copy.data.text
+                                copy.data.configAttributes.text = copy.data.text
+                                data.records = [copy];
+                            }
+                        }.bind(this),
+                        nodedragover: function (targetNode, position, dragData, e, eOpts) {
+                            if (
+                                targetNode.childNodes.length === 0
+                                && position === 'append'
+                            ) {
+                                return true;
+                            }
+
+                            return false;
+                        }.bind(this)
+                    }
+                },
+                listeners: {
+
+                    afterrender: function (tree) {
+
+                        //initialise search filter
+                        var classTreeHelper = new pimcore.object.helpers.classTree(true);
+                        classTreeHelper.updateFilter(tree, filterField);
+
+                        filterField.on("keyup", classTreeHelper.updateFilter.bind(tree, tree, filterField));
+                        filterButton.on("click", classTreeHelper.updateFilter.bind(tree, tree, filterField));
+
+                    },
+                    afterlayout: function (tree) {
+                        this.expandChildren(tree.getRootNode());
+                    }.bind(this),
+                    itemcontextmenu: function (tree, record, item, index, e, eOpts) {
+                        e.stopEvent();
+                        tree.select();
+
+                        var menu = new Ext.menu.Menu();
+
+                        if (this.id != 0 && record.parentNode.id != 0) {
+                            menu.add(new Ext.menu.Item({
+                                text: t('delete'),
+                                iconCls: "pimcore_icon_delete",
+                                handler: function (node) {
+                                    node.parentNode.removeChild(node, true);
+                                }.bind(this, record)
+                            }));
+                        }
+
+                        menu.showAt(e.pageX, e.pageY);
+                    }.bind(this)
+                },
+                buttons: [{
+                    text: t("apply"),
+                    iconCls: "pimcore_icon_apply",
+                    handler: function () {
+                        this.commitData();
+                    }.bind(this)
+                }]
+            });
+
+        }
+
+        return this.selectionPanel;
+    },
+
+    getSelectionPanel: function () {
+        if (this.displayMode === 'query') {
+            return this.getQuerySelectionPanel()
+        }
+
+        return this.getDefaultSelectionPanel()
+    },
+
     doBuildChannelConfigTree: function(configuration) {
         var elements = [];
         if(configuration) {
@@ -332,9 +472,11 @@ pimcore.bundle.outputDataConfigToolkit.OutputDataConfigDialog = Class.create(pim
         if (!this.leftPanel) {
 
             var items = [
-                this.getClassTree("/admin/outputdataconfig/get-class-definition-for-column-config", this.outputConfig.classId, this.targetObjectId),
-                this.getOperatorTree()
+                this.getClassTree("/admin/outputdataconfig/get-class-definition-for-column-config", this.outputConfig.classId, this.targetObjectId)
             ];
+            if (pimcore.bundle.outputDataConfigToolkit.outputDataConfigElements.operator !== undefined) {
+                items.push(this.getOperatorTree())
+            }
 
             this.brickKeys = [];
             this.leftPanel = new Ext.Panel({
