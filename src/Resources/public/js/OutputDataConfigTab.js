@@ -105,7 +105,7 @@ pimcore.bundle.outputDataConfigToolkit.Tab = Class.create({
                     tooltip: t('overwrite/edit'),
                     icon: "/bundles/pimcoreadmin/img/flat-color-icons/edit.svg",
                     handler: function (grid, rowIndex, colIndex, item, e, record, row) {
-                        this.openConfigDialog(record.id);
+                        this.openConfigDialog(record.id, record.data.classname, this.object.id);
                     }.bind(this)
                 }
             ]
@@ -178,11 +178,13 @@ pimcore.bundle.outputDataConfigToolkit.Tab = Class.create({
         }
     },
 
-    openConfigDialog: function(configId) {
+    openConfigDialog: function(configId, classname, $objectId) {
         Ext.Ajax.request({
             url: '/admin/outputdataconfig/admin/get-output-config',
             params: {
-                config_id: configId
+                config_id: configId,
+                object_id: $objectId,
+                classname: classname
             },
             success: function(response) {
                 var data = Ext.decode(response.responseText);

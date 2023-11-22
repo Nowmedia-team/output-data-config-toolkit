@@ -193,10 +193,10 @@ class AdminController extends UserAwareController
         try {
             $config = OutputDefinition::getById($request->get('config_id'));
 
-            $objectClass = ClassDefinition::getById($config->getClassId());
-            $configuration = json_decode($config->getConfiguration());
+            $objectClass = ClassDefinition::getById($request->get('classname'));
+            $configuration = json_decode($config->getConfiguration()) ?: [];
 
-            $object = AbstractObject::getById($config->getObjectId());
+            $object = AbstractObject::getById($request->get('object_id'));
 
             $displayConfig = $this->definitionQueryParams[$object->getClassName()] ?? [];
             $displayMode = $displayConfig['display_mode'] ?? ColumnDefinitionConfigDisplayMode::DEFAULT;
