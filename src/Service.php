@@ -15,9 +15,10 @@
 
 namespace OutputDataConfigToolkitBundle;
 
-use OutputDataConfigToolkitBundle\ConfigElement\IConfigElement;
-use Pimcore\Model\DataObject\ClassDefinition;
 use Symfony\Component\Filesystem\Filesystem;
+use Pimcore\Model\DataObject\ClassDefinition;
+use OutputDataConfigToolkitBundle\ConfigElement\IConfigElement;
+use OutputDataConfigToolkitBundle\ConfigElement\Value\LinkValue;
 
 class Service
 {
@@ -91,7 +92,10 @@ class Service
             foreach ($jsonConfig as $configElement) {
                 if ($configElement->type == 'value') {
                     $name = '\\OutputDataConfigToolkitBundle\\ConfigElement\\Value\\' . ucfirst($configElement->class);
-
+                    //TODO: transform to Operators
+                    if (!empty($configElement->childs) && $name === '\\'.LinkValue::class) {
+                        $configElement->childs = self::doBuildConfig($configElement->childs, [], $context);
+                    }
                     if (class_exists($name)) {
                         $config[] = new $name($configElement, $context);
                     }

@@ -198,7 +198,7 @@ class AdminController extends UserAwareController
 
             $object = AbstractObject::getById($request->get('object_id'));
 
-            $displayConfig = $this->definitionQueryParams[$object->getClassName()] ?? [];
+            $displayConfig = $this->definitionQueryParams[$object->getClassId()] ?? [];
             $displayMode = $displayConfig['display_mode'] ?? ColumnDefinitionConfigDisplayMode::DEFAULT;
 
             if ($displayMode === ColumnDefinitionConfigDisplayMode::QUERY) {
@@ -213,6 +213,8 @@ class AdminController extends UserAwareController
                         throw new \Exception('Class ' . $queryClass . ' must implement ' . IQueryOutputDefinition::class);
                     }
                     $configuration = $queryClassObject->loadConfiguration($objectClass, $object, $configuration);
+                } else {
+                    $configuration = $this->doGetAttributeLabels($configuration, $objectClass);
                 }
             } else {
                 $configuration = $this->doGetAttributeLabels($configuration, $objectClass);

@@ -69,7 +69,7 @@ class ClassController extends UserAwareController
         $result['objectColumns']['nodeType'] = 'object';
 
         //DataObject\Concrete::SYSTEM_COLUMN_NAMES
-        $systemColumnNames = ['id', 'fullpath', 'key', 'published', 'creationDate', 'modificationDate', 'filename', 'classname'];
+        $systemColumnNames = ['id', 'fullpath', 'key', 'published', 'creationDate', 'modificationDate', 'filename', 'classname', 'parentid'];
         $systemColumns = [];
         foreach ($systemColumnNames as $systemColumn) {
             $systemColumns[] = ['title' => $systemColumn, 'name' => $systemColumn, 'datatype' => 'data', 'fieldtype' => 'system'];
