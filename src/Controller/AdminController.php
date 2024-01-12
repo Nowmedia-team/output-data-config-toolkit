@@ -478,9 +478,10 @@ class AdminController extends UserAwareController
                 $objectClass = ClassDefinition::getById($config->getClassId());
                 $configuration = json_decode($configJson);
                 $configuration = $this->doGetAttributeLabels($configuration, $objectClass, true);
-                $configJson = json_encode($configuration);
+                $configJson = json_encode($configuration, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
                 $config->setConfiguration($configJson);
             }
+
             $config->save();
 
             return $this->jsonResponse(['success' => true]);

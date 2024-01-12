@@ -2,6 +2,9 @@
 
 namespace OutputDataConfigToolkitBundle\ConfigElement\Value;
 
+use Pimcore\Model\DataObject\AbstractObject;
+use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
+
 //TODO: convert to Operators
 class LinkValue extends DefaultValue
 {
@@ -40,11 +43,23 @@ class LinkValue extends DefaultValue
                 $type = $this->params->type;
             }
 
+            if (substr($child->attribute, 0, 4) == '#cs#') {
+                foreach ($object->getClass()->getFieldDefinitions() as $fieldCode => $definition) {
+                    if ($definition::class === Classificationstore::class) {
+                        $child->classificationstore = $fieldCode;
+                        $store = $object->get($child->classificationstore);
+                        if (!empty($store->getActiveGroups())) {
+                            $groupIds = array_keys($store->getActiveGroups());
+                            $child->classificationstore_group_id = reset($groupIds);
+                        }
+                    }
+                }
+            }
+
             $typedMethod = 'getLabeledValue' . ucfirst($type);
             if (method_exists($this, $typedMethod)) {
                 return $this->$typedMethod($child, $object);
             }
-            dd($type);
 
             return null;
         }
@@ -72,7 +87,25 @@ class LinkValue extends DefaultValue
         }
 
         return $newValue;
+    }
+
+    protected function getLabeledValueRelation($child, $object)
+    {
+        $value = $child->getLabeledValue($object);
+
+        if ($value && $value->value) {
+            $relation = AbstractObject::getById($value->value);
+
+            if (method_exists($relation, 'getXmlId')) {
+                $value->value = $relation->getXmlId();
+            } else {
+                $value->value = '';
+            }
+
+            return $value;
+        }
         
+        return null;
     }
 
     protected function getLabeledValueText($child, $object)
@@ -146,6 +179,8 @@ class LinkValue extends DefaultValue
     {
         $value = $child->getLabeledValue($object);
         if ($value->value) {
+            $value->value = (bool) $value->value;
+
             return $value;
         }
         
@@ -155,7 +190,9 @@ class LinkValue extends DefaultValue
     protected function getLabeledValueInteger($child, $object)
     {
         $value = $child->getLabeledValue($object);
-        if ($value->value) {
+        if ($value && $value->value) {
+            $value->value = (int) $value->value;
+
             return $value;
         }
         

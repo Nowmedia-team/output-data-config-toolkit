@@ -37,7 +37,7 @@ class Installer extends AbstractInstaller
               `objectId` int(11) NOT NULL,
               `classId` varchar(50) NOT NULL,
               `channel` varchar(255) COLLATE utf8_bin NOT NULL,
-              `configuration` longtext CHARACTER SET latin1,
+              `configuration` longtext CHARACTER SET utf8mb4,
               PRIMARY KEY (`id`),
               UNIQUE KEY `Unique` (`objectId`,`classId`,`channel`)
             ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;

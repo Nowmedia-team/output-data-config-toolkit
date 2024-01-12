@@ -76,6 +76,9 @@ class Configuration implements ConfigurationInterface
                         ->end()
                     ->end()
                 ->end()
+                ->scalarNode('relation_value_method')
+                    ->defaultValue('getXmlId')
+                ->end()
             ->end()
         ->end();
 

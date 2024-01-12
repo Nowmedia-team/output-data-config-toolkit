@@ -35,6 +35,9 @@ class DefaultValue extends AbstractConfigElement
     /** @var string|null */
     public $classificationstore_group;
 
+    /** @var int|null */
+    public $classificationstore_group_id;
+
     public function __construct($config, $context = null)
     {
         parent::__construct($config, $context);
@@ -82,11 +85,18 @@ class DefaultValue extends AbstractConfigElement
                 return null;
             }
             $getter = 'get' . ucfirst($this->classificationstore);
+
             // checking classification sote group
-            if (!$this->classificationstore_group) {
+            if (!$this->classificationstore_group && !$this->classificationstore_group_id) {
                 return null;
             }
-            $groupDef = Classificationstore\GroupConfig::getByName($this->classificationstore_group);
+
+            if ($this->classificationstore_group_id) {
+                $groupDef = Classificationstore\GroupConfig::getById($this->classificationstore_group_id);
+            } else {
+                $storeId = $object->getClass()->getFieldDefinition($this->classificationstore)->getStoreId();
+                $groupDef = Classificationstore\GroupConfig::getByName($this->classificationstore_group, $storeId);
+            }
 
             // classification store
             $attribute = str_replace('#cs#', '', $this->attribute);
