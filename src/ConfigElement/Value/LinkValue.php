@@ -4,6 +4,7 @@ namespace OutputDataConfigToolkitBundle\ConfigElement\Value;
 
 use Pimcore\Model\DataObject\AbstractObject;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
+use Pimcore\Model\DataObject\Data\Hotspotimage;
 
 //TODO: convert to Operators
 class LinkValue extends DefaultValue
@@ -167,7 +168,12 @@ class LinkValue extends DefaultValue
     {
         $value = $child->getLabeledValue($object);
         if ($value->value) {
-            $value->value = \Pimcore\Tool::getHostUrl() . $value->value->getFrontendFullPath();
+            if (Hotspotimage::class === $value->value::class) {
+                $path = $value->value->getImage()->getFrontendFullPath();
+            } else {
+                $path = $value->value->getFrontendFullPath();
+            }
+            $value->value = \Pimcore\Tool::getHostUrl() . $path;
 
             return $value;
         }
