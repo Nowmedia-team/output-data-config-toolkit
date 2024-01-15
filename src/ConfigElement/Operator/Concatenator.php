@@ -29,7 +29,7 @@ class Concatenator extends AbstractOperator
         $this->formatNumbers = $config->formatNumbers ?? false;
     }
 
-    public function getLabeledValue($object)
+    public function getLabeledValue($object, $lang = 'default')
     {
         $result = new \stdClass();
         $result->value = null;
@@ -44,7 +44,7 @@ class Concatenator extends AbstractOperator
         $valueArray = [];
 
         foreach ($childs as $c) {
-            $value = $c->getLabeledValue($object) ? $c->getLabeledValue($object)->value : null;
+            $value = $c->getLabeledValue($object, $lang) ? $c->getLabeledValue($object, $lang)->value : null;
 
             if (!$hasValue) {
                 if (is_object($value) && method_exists($value, 'isEmpty')) {

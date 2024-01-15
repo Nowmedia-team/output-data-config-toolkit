@@ -119,18 +119,19 @@ Create a Pimcore bundle and add following files:
 <?php
 namespace OutputDataConfigToolkitBundle\ConfigElement\Operator;
 
-class RemoveZero extends AbstractOperator {
-
-
-    public function __construct($config, $context = null) {
+class RemoveZero extends AbstractOperator
+{
+    public function __construct($config, $context = null)
+    {
         parent::__construct($config, $context);
     }
 
-    public function getLabeledValue($object) {
+    public function getLabeledValue($object, $lang = 'default')
+    {
         $childs = $this->getChilds();
         if($childs[0]) {
 
-            $value = $childs[0]->getLabeledValue($object);
+            $value = $childs[0]->getLabeledValue($object, $lang);
             $value->value = $value->value == 0 ? null : $value->value;
 
             return $value;

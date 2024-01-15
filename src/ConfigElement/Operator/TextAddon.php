@@ -26,11 +26,11 @@ class TextAddon extends AbstractOperator
         $this->addon = $config->addon;
     }
 
-    public function getLabeledValue($object)
+    public function getLabeledValue($object, $lang = 'default')
     {
         $childs = $this->getChilds();
         if (!empty($childs)) {
-            $value = $childs[0]->getLabeledValue($object);
+            $value = $childs[0]->getLabeledValue($object, $lang);
 
             if (!is_null($value->value)) {
                 $value->value = $value->value.$this->getAddon();

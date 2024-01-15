@@ -37,7 +37,8 @@ class ProductDetailSpecification extends Helper {
     }
 
 
-    public function __invoke($property, $product) {
+    public function __invoke($property, $product)
+    {
         if($property instanceof Group) {
             $labeledValue = $property->getLabeledValue($product);
             if($labeledValue) {

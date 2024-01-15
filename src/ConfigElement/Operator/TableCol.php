@@ -28,13 +28,13 @@ class TableCol extends AbstractOperator
         $this->headline = $config->headline;
     }
 
-    public function getLabeledValue($object)
+    public function getLabeledValue($object, $lang = 'default')
     {
         $value = null;
 
         $childs = $this->getChilds();
         if ($childs) {
-            $value = $childs[0]->getLabeledValue($object);
+            $value = $childs[0]->getLabeledValue($object, $lang);
             $value->colSpan = $this->colspan;
             $value->headline = $this->headline;
 

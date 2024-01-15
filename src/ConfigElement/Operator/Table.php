@@ -25,7 +25,7 @@ class Table extends AbstractOperator
         $this->tooltip = $config->tooltip;
     }
 
-    public function getLabeledValue($object)
+    public function getLabeledValue($object, $lang = 'default')
     {
         $value = new \stdClass();
 
@@ -37,7 +37,7 @@ class Table extends AbstractOperator
         $isEmpty = false;
         $valueArray = [];
         foreach ($childs as $c) {
-            $row = $c->getLabeledValue($object);
+            $row = $c->getLabeledValue($object, $lang);
             $valueArray[] = $row;
             $isEmpty = $row->empty;
         }

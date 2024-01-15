@@ -31,11 +31,11 @@ class CellFormater extends AbstractOperator
         $this->labelStyles = $config->labelStyles;
     }
 
-    public function getLabeledValue($object)
+    public function getLabeledValue($object, $lang = 'default')
     {
         $childs = $this->getChilds();
         if ($childs) {
-            return $childs[0]->getLabeledValue($object);
+            return $childs[0]->getLabeledValue($object, $lang);
         }
 
         return null;

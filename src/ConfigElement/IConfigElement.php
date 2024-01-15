@@ -17,5 +17,5 @@ namespace OutputDataConfigToolkitBundle\ConfigElement;
 
 interface IConfigElement
 {
-    public function getLabeledValue($object);
+    public function getLabeledValue($object, $lang = 'default');
 }

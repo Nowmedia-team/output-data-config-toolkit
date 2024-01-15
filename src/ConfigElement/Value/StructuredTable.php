@@ -30,19 +30,19 @@ class StructuredTable extends DefaultValue
         $this->col = $config->col;
     }
 
-    public function getLabeledValue($object)
+    public function getLabeledValue($object, $lang = 'default')
     {
         if ($this->wholeTable) {
-            return parent::getLabeledValue($object);
+            return parent::getLabeledValue($object, $lang);
         } elseif (!empty($this->row) && !empty($this->col)) {
-            $wholeResult = parent::getLabeledValue($object);
+            $wholeResult = parent::getLabeledValue($object, $lang);
 
             $label = $wholeResult->label;
             $value = null;
 
             if (!empty($wholeResult->value)) {
                 $getter = 'get' . ucfirst($this->row . '__' . $this->col);
-                $value = $wholeResult->value->$getter();
+                $value = $wholeResult->value->$getter($lang);
             }
 
             $result = new \stdClass();

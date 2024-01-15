@@ -26,13 +26,13 @@ class TranslateValue extends AbstractOperator
         $this->prefix = $config->prefix;
     }
 
-    public function getLabeledValue($object)
+    public function getLabeledValue($object, $lang = 'default')
     {
         $childs = $this->getChilds();
         if ($childs) {
             $translator = \Pimcore::getContainer()->get('translator');
 
-            $value = $childs[0]->getLabeledValue($object);
+            $value = $childs[0]->getLabeledValue($object, $lang);
             if ($value->value) {
                 $value->value = $translator->trans($this->prefix . $value->value);
             }

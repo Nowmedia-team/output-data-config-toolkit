@@ -44,7 +44,7 @@ class DefaultValue extends AbstractConfigElement
         $this->icon = $config->icon ?? null;
     }
 
-    public function getLabeledValue($object)
+    public function getLabeledValue($object, $lang = 'default')
     {
         $attributeParts = explode('~', $this->attribute);
         $label = $this->label;
@@ -102,7 +102,7 @@ class DefaultValue extends AbstractConfigElement
             $attribute = str_replace('#cs#', '', $this->attribute);
             list($keyId) = explode('#', $attribute);
 
-            $value = $object->$getter()->getLocalizedKeyValue($groupDef->getId(), $keyId);
+            $value = $object->$getter()->getLocalizedKeyValue($groupDef->getId(), $keyId, $lang);
 
             $result = new \stdClass();
             $result->value = $value;
@@ -124,7 +124,7 @@ class DefaultValue extends AbstractConfigElement
         }
         if (method_exists($object, $getter)
             || (class_exists(DefaultMockup::class) && $object instanceof DefaultMockup)) {
-            $value = $object->$getter();
+            $value = $object->$getter($lang);
             $def = null;
 
             if ((class_exists(DefaultMockup::class) && $object instanceof DefaultMockup)

@@ -32,9 +32,9 @@ class DimensionUnitField extends DefaultValue
         }
     }
 
-    public function getLabeledValue($object)
+    public function getLabeledValue($object, $lang = 'default')
     {
-        $rawResult = parent::getLabeledValue($object);
+        $rawResult = parent::getLabeledValue($object, $lang);
         if ($this->mode == self::RAW_RESULT) {
             return $rawResult;
         } elseif (!empty($rawResult)) {

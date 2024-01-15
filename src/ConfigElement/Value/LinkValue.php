@@ -14,7 +14,7 @@ class LinkValue extends DefaultValue
      */
     protected $childs;
 
-    protected $params;
+    protected object $params;
 
     /**
      * @return IConfigElement[]
@@ -36,7 +36,7 @@ class LinkValue extends DefaultValue
         $this->params = $config->params ?? [];
     }
 
-    public function getLabeledValue($object)
+    public function getLabeledValue($object, $lang = 'default')
     {
         if ($child = $this->getFirstChild()) {
             $type = 'string';
@@ -59,7 +59,7 @@ class LinkValue extends DefaultValue
 
             $typedMethod = 'getLabeledValue' . ucfirst($type);
             if (method_exists($this, $typedMethod)) {
-                return $this->$typedMethod($child, $object);
+                return $this->$typedMethod($child, $object, $lang);
             }
 
             return null;
@@ -90,9 +90,9 @@ class LinkValue extends DefaultValue
         return $newValue;
     }
 
-    protected function getLabeledValueRelation($child, $object)
+    protected function getLabeledValueRelation($child, $object, $lang = 'default')
     {
-        $value = $child->getLabeledValue($object);
+        $value = $child->getLabeledValue($object, $lang);
 
         if ($value && $value->value) {
             $relation = AbstractObject::getById($value->value);
@@ -109,14 +109,14 @@ class LinkValue extends DefaultValue
         return null;
     }
 
-    protected function getLabeledValueText($child, $object)
+    protected function getLabeledValueText($child, $object, $lang = 'default')
     {
-        return $this->getLabeledValueString($child, $object);
+        return $this->getLabeledValueString($child, $object, $lang);
     }
 
-    protected function getLabeledValueString($child, $object)
-    {        
-        $value = $child->getLabeledValue($object);
+    protected function getLabeledValueString($child, $object, $lang = 'default')
+    {
+        $value = $child->getLabeledValue($object, $lang);
         if ($value->value) {
             if (is_array($value->value)) {
                 $value->value = $this->arrayToValue($value->value);
@@ -128,29 +128,28 @@ class LinkValue extends DefaultValue
         return null;
     }
 
-    protected function getLabeledValueList($child, $object)
+    protected function getLabeledValueList($child, $object, $lang = 'default')
     {
-        $value = $child->getLabeledValue($object);
+        $value = $child->getLabeledValue($object, $lang);
         if ($value->value) {
             $translator = \Pimcore::getContainer()->get('translator');
             if (is_array($value->value)) {
                 $oldValue = $value->value;
                 $value->value = [];
-                foreach ($value->def->options as $sortKey => $option) {
+                foreach ($value->def->getDataForGrid([])['options'] as $sortKey => $option) {
                     if (in_array($option['value'], $oldValue)) {
                         $value->value[] = [
-                            'value' => $translator->trans($option['key'], [], 'selects'),
+                            'value' => $translator->trans($option['key'], [], 'selects', $lang),
                             'xml_id' => $option['value'],
                             'sort' => ($sortKey + 1) * 100
                         ];
                     }
                 }
-
             } else {
-                foreach ($value->def->options as $sortKey => $option) {
+                foreach ($value->def->getDataForGrid([])['options'] as $sortKey => $option) {
                     if ($option['value'] === $value->value) {
                         $value->value = [
-                            'value' => $translator->trans($option['key'], [], 'selects'),
+                            'value' => $translator->trans($option['key'], [], 'selects', $lang),
                             'xml_id' => $option['value'],
                             'sort' => ($sortKey + 1) * 100
                         ];
@@ -160,13 +159,13 @@ class LinkValue extends DefaultValue
 
             return $value;
         }
-        
+
         return null;
     }
 
-    protected function getLabeledValueFile($child, $object)
+    protected function getLabeledValueFile($child, $object, $lang = 'default')
     {
-        $value = $child->getLabeledValue($object);
+        $value = $child->getLabeledValue($object, $lang);
         if ($value->value) {
             if (Hotspotimage::class === $value->value::class) {
                 $path = $value->value->getImage()->getFrontendFullPath();
@@ -181,9 +180,9 @@ class LinkValue extends DefaultValue
         return null;
     }
 
-    protected function getLabeledValueBoolean($child, $object)
+    protected function getLabeledValueBoolean($child, $object, $lang = 'default')
     {
-        $value = $child->getLabeledValue($object);
+        $value = $child->getLabeledValue($object, $lang);
         if ($value->value) {
             $value->value = (bool) $value->value;
 
@@ -193,9 +192,9 @@ class LinkValue extends DefaultValue
         return null;
     }
 
-    protected function getLabeledValueInteger($child, $object)
+    protected function getLabeledValueInteger($child, $object, $lang = 'default')
     {
-        $value = $child->getLabeledValue($object);
+        $value = $child->getLabeledValue($object, $lang);
         if ($value && $value->value) {
             $value->value = (int) $value->value;
 

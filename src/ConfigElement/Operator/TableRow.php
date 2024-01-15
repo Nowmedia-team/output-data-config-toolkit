@@ -26,7 +26,7 @@ class TableRow extends AbstractOperator
         $this->headline = $config->headline;
     }
 
-    public function getLabeledValue($object)
+    public function getLabeledValue($object, $lang = 'default')
     {
         $value = new \stdClass();
 
@@ -35,11 +35,11 @@ class TableRow extends AbstractOperator
         $valueArray = [];
 
         foreach ($childs as $c) {
-            $col = $c->getLabeledValue($object);
+            $col = $c->getLabeledValue($object, $lang);
             if (!empty($col) && (!$col->empty && !($c instanceof \OutputDataConfigToolkitBundle\ConfigElement\Operator\Text))) {
                 $isEmpty = false;
             }
-            $valueArray[] = $c->getLabeledValue($object);
+            $valueArray[] = $c->getLabeledValue($object, $lang);
         }
 
         $value->value = $valueArray;
