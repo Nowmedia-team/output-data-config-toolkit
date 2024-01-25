@@ -29,6 +29,7 @@ use Pimcore\Model\DataObject\AbstractObject;
 use Pimcore\Model\DataObject\ClassDefinition;
 use Pimcore\Model\DataObject\Classificationstore\KeyConfig;
 use Pimcore\Model\DataObject\Objectbrick\Definition;
+use PimcoreExportBundle\OutputData\DomainPropertyQuery;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -63,6 +64,7 @@ class AdminController extends UserAwareController
     {
         $services = parent::getSubscribedServices();
         $services['translator'] = TranslatorInterface::class;
+        $services[DomainPropertyQuery::class] = DomainPropertyQuery::class; //TODO: костыль для видимости сервиса из другого бандла, нужно убрать по возможности
 
         return $services;
     }
@@ -193,7 +195,7 @@ class AdminController extends UserAwareController
         try {
             $config = OutputDefinition::getById($request->get('config_id'));
 
-            $objectClass = ClassDefinition::getById($request->get('classname'));
+            $classDefinition = ClassDefinition::getById($request->get('classname'));
             $configuration = json_decode($config->getConfiguration()) ?: [];
 
             $object = AbstractObject::getById($request->get('object_id'));
@@ -203,21 +205,18 @@ class AdminController extends UserAwareController
 
             if ($displayMode === ColumnDefinitionConfigDisplayMode::QUERY) {
                 $queryClass = $displayConfig['query_class_full_path'] ?: '';
-                if (
-                    !empty($queryClass)
-                    && class_exists($queryClass)
-                ) {
+                if (!empty($queryClass) && $this->container->has($queryClass)) {
                     /** @var IQueryOutputDefinition $queryClassObject */
-                    $queryClassObject = new $queryClass();
+                    $queryClassObject = $this->container->get($queryClass);
                     if (!$queryClassObject instanceof IQueryOutputDefinition) {
                         throw new \Exception('Class ' . $queryClass . ' must implement ' . IQueryOutputDefinition::class);
                     }
-                    $configuration = $queryClassObject->loadConfiguration($objectClass, $object, $configuration);
+                    $configuration = $queryClassObject->loadConfiguration($classDefinition, $object, $configuration);
                 } else {
-                    $configuration = $this->doGetAttributeLabels($configuration, $objectClass);
+                    $configuration = $this->doGetAttributeLabels($configuration, $classDefinition);
                 }
             } else {
-                $configuration = $this->doGetAttributeLabels($configuration, $objectClass);
+                $configuration = $this->doGetAttributeLabels($configuration, $classDefinition);
             }
 
             $config->setConfiguration($configuration);

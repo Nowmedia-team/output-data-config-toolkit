@@ -4,5 +4,7 @@ services:
     autoconfigure: true
     public: true
 
-  OutputDataConfigToolkitBundle\Controller\ClassController:
-  OutputDataConfigToolkitBundle\Controller\AdminController:
+  OutputDataConfigToolkitBundle\Controller\:
+    resource: '../../Controller/*'
+    tags:
+        - { name: outputdataconfigtoolkitbundle.controller }

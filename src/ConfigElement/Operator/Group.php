@@ -17,13 +17,13 @@ namespace OutputDataConfigToolkitBundle\ConfigElement\Operator;
 
 class Group extends AbstractOperator
 {
-    public function getLabeledValue($object)
+    public function getLabeledValue($object, $lang = 'default')
     {
         $valueArray = [];
 
         $childs = $this->getChilds();
         foreach ($childs as $c) {
-            $value = $c->getLabeledValue($object);
+            $value = $c->getLabeledValue($object, $lang);
             if (!empty($value) && !$value->empty && (!method_exists($value, 'isEmpty') || !$value->isEmpty())) {
                 $valueArray[] = $value;
             }

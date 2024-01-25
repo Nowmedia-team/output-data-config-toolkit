@@ -95,12 +95,28 @@ class LinkValue extends DefaultValue
         $value = $child->getLabeledValue($object, $lang);
 
         if ($value && $value->value) {
-            $relation = AbstractObject::getById($value->value);
-
-            if (method_exists($relation, 'getXmlId')) {
-                $value->value = $relation->getXmlId();
+            if (is_array($value->value)) {
+                foreach ($value->value as $relation) {
+                    if ( ! $relation instanceof AbstractObject) {
+                        $relation = AbstractObject::getById($relation);
+                    }
+                    if (method_exists($relation, 'getXmlId')) {
+                        $value->value = $relation->getXmlId();
+                    } else {
+                        $value->value = '';
+                    }
+                }
             } else {
-                $value->value = '';
+                $relation = $value->value;
+                if ( ! $relation instanceof AbstractObject) {
+                    $relation = AbstractObject::getById($relation);
+                }
+
+                if (method_exists($relation, 'getXmlId')) {
+                    $value->value = $relation->getXmlId();
+                } else {
+                    $value->value = '';
+                }
             }
 
             return $value;
@@ -172,7 +188,7 @@ class LinkValue extends DefaultValue
             } else {
                 $path = $value->value->getFrontendFullPath();
             }
-            $value->value = \Pimcore\Tool::getHostUrl() . $path;
+            $value->value = \Pimcore\Tool::getHostUrl('https') . $path;
 
             return $value;
         }
@@ -183,7 +199,7 @@ class LinkValue extends DefaultValue
     protected function getLabeledValueBoolean($child, $object, $lang = 'default')
     {
         $value = $child->getLabeledValue($object, $lang);
-        if ($value->value) {
+        if ($value->value !== null) {
             $value->value = (bool) $value->value;
 
             return $value;
