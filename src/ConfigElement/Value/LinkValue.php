@@ -5,6 +5,7 @@ namespace OutputDataConfigToolkitBundle\ConfigElement\Value;
 use Pimcore\Model\DataObject\AbstractObject;
 use Pimcore\Model\DataObject\ClassDefinition\Data\Classificationstore;
 use Pimcore\Model\DataObject\Data\Hotspotimage;
+use Pimcore\Model\DataObject\Data\ObjectMetadata;
 
 //TODO: convert to Operators
 class LinkValue extends DefaultValue
@@ -96,26 +97,50 @@ class LinkValue extends DefaultValue
 
         if ($value && $value->value) {
             if (is_array($value->value)) {
-                foreach ($value->value as $relation) {
-                    if ( ! $relation instanceof AbstractObject) {
-                        $relation = AbstractObject::getById($relation);
-                    }
-                    if (method_exists($relation, 'getXmlId')) {
-                        $value->value = $relation->getXmlId();
+                $byKey = $this->getOption('byKey');
+                $newValue = $this->params->multiple ? [] : null;
+                foreach ($value->value as $relationValue) {
+                    if ($relationValue instanceof ObjectMetadata) {
+                        $relation = $relationValue->getObject();
+                    } else if (is_int($relationValue)) {
+                        $relation = AbstractObject::getById($relationValue);
                     } else {
-                        $value->value = '';
+                        $relation = $relationValue;
+                    }
+                    if ($relation && method_exists($relation, 'getXml_id')) { //TODO: в конфиг метод
+                        if ($byKey) {
+                            if ($relationValue->getData()[$byKey]) {
+                                $newValue = $relation->getXml_id();
+                                break;
+                            }
+                        } else {
+                            if ($this->params->multiple) {
+                                $newValue[] = $relation->getXml_id();
+                            } else {
+                                $newValue = $relation->getXml_id();
+                                break;
+                            }
+                        }
                     }
                 }
+                $value->value = $newValue;
             } else {
-                $relation = $value->value;
-                if ( ! $relation instanceof AbstractObject) {
-                    $relation = AbstractObject::getById($relation);
+                if ($value->value instanceof ObjectMetadata) {
+                    $relation = $value->value->getObject();
+                } else if (is_int($value->value)) {
+                    $relation = AbstractObject::getById($value->value);
+                } else {
+                    $relation = $value->value;
                 }
 
-                if (method_exists($relation, 'getXmlId')) {
-                    $value->value = $relation->getXmlId();
+                if (method_exists($relation, 'getXml_id')) {//TODO: в конфиг метод
+                    if ($this->params->multiple) {
+                        $value->value[] = $relation->getXml_id();
+                    } else {
+                        $value->value = $relation->getXml_id();
+                    }
                 } else {
-                    $value->value = '';
+                    $value->value = null;
                 }
             }
 

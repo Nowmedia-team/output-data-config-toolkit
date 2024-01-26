@@ -17,6 +17,7 @@ namespace OutputDataConfigToolkitBundle\ConfigElement;
 
 abstract class AbstractConfigElement implements IConfigElement
 {
+    protected array $options = [];
     protected $attribute;
     protected $label;
 
@@ -38,5 +39,15 @@ abstract class AbstractConfigElement implements IConfigElement
     public function getAttribute()
     {
         return $this->attribute;
+    }
+
+    public function addOption(string $key, mixed $value): void
+    {
+        $this->options[$key] = $value;
+    }
+
+    public function getOption(string $key): mixed
+    {
+        return $this->options[$key] ?? null;
     }
 }

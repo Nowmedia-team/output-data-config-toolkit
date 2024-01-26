@@ -18,4 +18,6 @@ namespace OutputDataConfigToolkitBundle\ConfigElement;
 interface IConfigElement
 {
     public function getLabeledValue($object, $lang = 'default');
+    public function addOption(string $key, mixed $value): void;
+    public function getOption(string $key): mixed;
 }
