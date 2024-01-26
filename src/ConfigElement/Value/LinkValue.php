@@ -109,7 +109,7 @@ class LinkValue extends DefaultValue
                     }
                     if ($relation && method_exists($relation, 'getXml_id')) { //TODO: в конфиг метод
                         if ($byKey) {
-                            if ($relationValue->getData()[$byKey]) {
+                            if ($relationValue->getData()[$byKey] ?? '') {
                                 $newValue = $relation->getXml_id();
                                 break;
                             }
